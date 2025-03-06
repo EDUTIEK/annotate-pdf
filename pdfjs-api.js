@@ -8,6 +8,10 @@
  *     intern: {Object},
  * }} Annotation
  *
+ * @param {string} parent   id of the parent element to add the iframe
+ * @param {string} viewer   url of the viewer html (source of iframe, without parameter)
+ * @param {string} pdf      url of the pdf file to load
+ *
  * @return {{
  *   on: {function(string, function(CustomEvent)): void},
  *   off: {function(string, function(CustomEvent)): void},
@@ -24,7 +28,7 @@
  *   rebuild: {function(): void}
  * }}
  */
-export default (parent, pdf) => {
+export default (parent, viewer, pdf) => {
     let currentRequest = Promise.resolve();
     const t = new EventTarget();
     const dispatch = (name, detail = null) => t.dispatchEvent(new CustomEvent(name, {detail}));
@@ -32,7 +36,7 @@ export default (parent, pdf) => {
     const pending = {};
     const frame = document.createElement('iframe');
     const ready = Promise.withResolvers();
-    frame.src = './pdfjs-dist/web/viewer.html?file=' + encodeURIComponent(pdf);
+    frame.src = viewer + '?file=' + encodeURIComponent(pdf);
     frame.style.width = '100%';
     frame.style.height = '100%';
     parent.appendChild(frame);
