@@ -1,4 +1,4 @@
-#editorFreeText, #editorInk, #editorStamp, #printButton, #downloadButton, #presentationMode
+#editorFreeText, #editorInk, #editorStamp, #printButton, #downloadButton, #presentationMode, #editorHighlightThickness, #editorHighlightVisibility
 {
-    display: none;
+    display: none!important;
 }

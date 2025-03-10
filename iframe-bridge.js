@@ -2,6 +2,8 @@ run();
 
 function run()
 {
+    window.localStorage.removeItem('pdfjs.history');
+    window.localStorage.removeItem('pdfjs.preferences');
     setup(forwardEvent, actions => {
         window.addEventListener('message', event => {
             then(
@@ -467,7 +469,7 @@ function diff(left, right)
         return null;
     }
     const t = typeof left;
-    if(t !== typeof left){
+    if(t !== typeof right){
         return {leftType: t, rightType: typeof right};
     }
     if(t !== 'object'){

@@ -851,7 +851,7 @@ const defaultOptions = {
 }
 {
   defaultOptions.disablePreferences = {
-    value: true,
+    value: false,
     kind: OptionKind.VIEWER
   };
 }
@@ -13088,7 +13088,7 @@ class ViewHistory {
   }
   async _writeToStorage() {
     const databaseStr = JSON.stringify(this.database);
-    // localStorage.setItem("pdfjs.history", databaseStr);
+    localStorage.setItem("pdfjs.history", databaseStr);
   }
   async _readFromStorage() {
     return localStorage.getItem("pdfjs.history");
