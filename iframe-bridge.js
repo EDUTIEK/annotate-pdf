@@ -103,6 +103,7 @@ function setup(dispatch, ready){
 
         pdfSwitchToMode(PDF_EDIT_MODE());
         ready(actions);
+        PDFViewerApplication.viewsManager.setInitialView(0);
         dispatch('ready');
 
         function deleteEntry(entry)
