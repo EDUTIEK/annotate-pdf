@@ -5602,7 +5602,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   debuggerSrc: {
-    value: "./debugger.mjs",
+    value: "./debugger.js",
     kind: OptionKind.VIEWER
   },
   defaultZoomDelay: {
@@ -5835,7 +5835,7 @@ const defaultOptions = {
     kind: OptionKind.WORKER
   },
   workerSrc: {
-    value: "../build/pdf.worker.mjs",
+    value: "../build/pdf.worker.js",
     kind: OptionKind.WORKER
   }
 };
@@ -5845,7 +5845,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER
   };
   defaultOptions.sandboxBundleSrc = {
-    value: "../build/pdf.sandbox.mjs",
+    value: "../build/pdf.sandbox.js",
     kind: OptionKind.VIEWER
   };
   defaultOptions.enableFakeMLManager = {
