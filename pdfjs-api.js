@@ -27,7 +27,8 @@
  *   select: {function(string): Promise},
  *   currentPage: {function(): Promise<number>},
  *   destroy: {function(): void},
- *   rebuild: {function(): void}
+ *   rebuild: {function(): void},
+ *   setViewOnly: {function(bool): Promise},
  * }}
  */
 export default (parent, viewer, pdf, options = {}) => {
