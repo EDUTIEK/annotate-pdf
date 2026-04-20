@@ -50,7 +50,7 @@ function setup(dispatch, ready){
             },
             add: newOne => {
                 const id = newOne.id || uuid();
-                const page = newOne.page || pdfCurrentPageIndex();
+                const page = typeof newOne.page === 'number' ? newOne.page : pdfCurrentPageIndex();
                 const entry = {
                     id,
                     page,
