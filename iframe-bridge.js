@@ -111,6 +111,12 @@ function setup(dispatch, ready){
                 pdfSwitchToMode(viewOnly ? PDF_VIEW_MODE() : PDF_EDIT_MODE());
                 document.querySelector('#editorHighlight').classList[viewOnly ? 'add' : 'remove']('annotate-pdf-hide');
             },
+            setDefaultColor: color => {
+                pdfjsLib.HighlightEditor.updateDefaultParams(
+                    pdfjsLib.AnnotationEditorParamsType.HIGHLIGHT_COLOR,
+                    color
+                );
+            },
         };
 
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));
@@ -210,6 +216,7 @@ function externEntry(entry)
         id: entry.id,
         page: entry.page,
         intern: entry.intern,
+        pos: {x: entry.editor.x, y: entry.editor.y},
     };
 }
 
