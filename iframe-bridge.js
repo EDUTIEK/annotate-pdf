@@ -45,7 +45,7 @@ function setup(dispatch, ready){
         const actions = {
             getAll: () => entries.map(externEntry),
             setAll: newOnes => {
-                entries.forEach(deleteEntry);
+                entries.forEach(x => deleteEntry(x)); // Don't pass index as enableUndo
                 entries = [];
                 newOnes.forEach(actions.add);
             },
@@ -70,10 +70,11 @@ function setup(dispatch, ready){
                     });
                 });
             },
-            'delete': id => {
+            'delete': (id, enableUndo) => {
+                console.log(enableUndo)
                 entries = entries.filter(x => {
                     if(x.id === id){
-                        deleteEntry(x);
+                        deleteEntry(x, enableUndo);
                         return false;
                     }
                     return true;
@@ -130,10 +131,26 @@ function setup(dispatch, ready){
         PDFViewerApplication.viewsManager.setInitialView(0);
         dispatch('ready');
 
-        function deleteEntry(entry)
+        function deleteEntry(entry, enableUndo)
         {
+            const undo = () => {
+                manager.addEditorToLayer(entry.editor);
+            };
+            const cmd = () => {
+                manager._editorUndoBar?.show(undo, entry.editor.editorType);
+                entry.editor.remove();
+            };
             deletedIds.push(entry.id);
-            entry.editor?.remove();
+            if (enableUndo && entry.editor) {
+                lastDeleted = {internId: entry.editor.id, id: entry.id};
+                manager.addCommands({
+                    cmd,
+                    undo,
+                    mustExec: true,
+                });
+            } else {
+                entry.editor?.remove();
+            }
             const ret = entry.returnPending;
             ret && ret();
         }

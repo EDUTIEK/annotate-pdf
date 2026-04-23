@@ -9860,6 +9860,11 @@ class AnnotationEditorUIManager {
     this.removeChangedExistingAnnotation(editor);
     editor.deleted = false;
   }
+  // edutiek-patch: begin
+  addEditorToLayer(editor) {
+    this.#addEditorToLayer(editor);
+  }
+  // edutiek-patch: end
   #addEditorToLayer(editor) {
     const layer = this.#allLayers.get(editor.pageIndex);
     if (layer) {
