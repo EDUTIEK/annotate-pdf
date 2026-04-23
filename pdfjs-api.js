@@ -33,6 +33,7 @@
  *   rebuild: {function(): void},
  *   setViewOnly: {function(bool): Promise},
  *   setDefaultColor: {function(Color): Promise},
+ *   buildBlob: {function(): Promise<Blob>},
  * }}
  */
 export default (parent, viewer, pdf, options = {}) => {
@@ -83,6 +84,7 @@ export default (parent, viewer, pdf, options = {}) => {
         },
         setViewOnly: viewOnly => request('viewOnly', viewOnly),
         setDefaultColor: color => request('setDefaultColor', color),
+        buildBlob: () => request('buildBlob'),
     };
 
     function request(name, ...args)

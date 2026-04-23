@@ -28,6 +28,7 @@ function setup(dispatch, ready){
     let selecting = null; // Used to streamline select when switching editor modes.
     let updating = null; // Used to streamline updating, to prevent bogus create & delete events.
     let deletedIds = []; // Used to prevent 'delete' events that are triggered manually.
+    let lastDeleted = {}; // For undo to work
     const selected = state(null, (oldOne, newOne) => {
         selecting = null;
         const ret = (oldOne || {}).returnPending;
@@ -117,6 +118,11 @@ function setup(dispatch, ready){
                     color
                 );
             },
+            buildBlob: () => new Promise(ok => {
+                const proc = data => {PDFViewerApplication.eventBus.off(proc); ok(data);};
+                PDFViewerApplication.eventBus.on('edutiekDownload', proc);
+                PDFViewerApplication.eventBus.dispatch('download');
+            }),
         };
 
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));
@@ -139,7 +145,12 @@ function setup(dispatch, ready){
             const deleted = entries.filter(x => !isUsed(x));
             entries = entries.filter(isUsed);
             updating = null;
-            deleted.forEach(x => !deletedIds.includes(x.id) && dispatch('delete', externEntry(x)));
+            deleted.forEach(x => {
+                if (!deletedIds.includes(x.id)) {
+                    lastDeleted = {internId: x.editor.id, id: x.id};
+                    dispatch('delete', externEntry(x));
+                }
+            });
             deletedIds = deletedIds.filter(id => !deleted.find(x => x.id === id));
             updateSelection();
         }
@@ -158,7 +169,7 @@ function setup(dispatch, ready){
             if(!entry){
                 Promise.all(entries.filter(x => x.page === page).map(x => sync(x, 'checkCreate', Void))).then(() => {
                     if(entryByEditor(editor)){return;}
-                    const id = uuid();
+                    const id = lastDeleted.internId === editor.id ? lastDeleted.id : uuid();
                     const entry = {id, page, editor, intern: pdfSerializeEditor(editor)};
                     const extern = externEntry(entry);
                     entries.push(entry);
@@ -168,7 +179,7 @@ function setup(dispatch, ready){
                 });
                 return null;
             }else if(s !== JSON.stringify(entry.intern)){
-                // These are null -> NaN and rounding issues and don't need to be propagated.
+                // These are null -> NaN and rounding issues that don't need to be propagated.
                 const ignore = arrayEquals(
                     ['outlines', 'rect'],
                     Object.keys((diff(newData, entry.intern) || {}).Object || {})
