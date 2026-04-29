@@ -2,3 +2,8 @@
 {
     display: none!important;
 }
+
+#viewer.disable-freeform-highlight .textLayer
+{
+	cursor: default!important;
+}

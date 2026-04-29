@@ -124,6 +124,10 @@ function setup(dispatch, ready){
                 PDFViewerApplication.eventBus.on('edutiekDownload', proc);
                 PDFViewerApplication.eventBus.dispatch('download');
             }),
+	    enableFreeFormHighlight: bool => {
+		document.querySelector('#viewer').classList[bool ? 'remove' : 'add']('disable-freeform-highlight');
+		manager.disableFreeForm = !bool;
+	    },
         };
 
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));

@@ -34,6 +34,7 @@
  *   setViewOnly: {function(bool): Promise},
  *   setDefaultColor: {function(Color): Promise},
  *   buildBlob: {function(): Promise<Blob>},
+ *   enableFreeFormHighlight: {function(bool): Promise},
  * }}
  */
 export default (parent, viewer, pdf, options = {}) => {
@@ -85,6 +86,7 @@ export default (parent, viewer, pdf, options = {}) => {
         setViewOnly: viewOnly => request('viewOnly', viewOnly),
         setDefaultColor: color => request('setDefaultColor', color),
         buildBlob: () => request('buildBlob'),
+	enableFreeFormHighlight: bool => request('enableFreeFormHighlight', bool),
     };
 
     function request(name, ...args)

@@ -32115,7 +32115,9 @@ class AnnotationEditorLayer {
       const {
         isMac
       } = util_FeatureTest.platform;
-      if (event.button !== 0 || event.ctrlKey && isMac) {
+      // edutiek-patch: begin
+      if (this.#uiManager.disableFreeForm || event.button !== 0 || event.ctrlKey && isMac) {
+	// edutiek-patch: end
         return;
       }
       this.#uiManager.showAllEditors("highlight", true, true);
