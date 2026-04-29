@@ -10585,7 +10585,7 @@ class DownloadManager {
     // edutiek-patch: begin
     PDFViewerApplication.eventBus.dispatch('edutiekDownload', {source: this, data: new Blob([data], {type: 'application/pdf'})});
     return;
-    // edutiek-patch: begin
+    // edutiek-patch: end
     let blobUrl;
     if (data) {
       blobUrl = URL.createObjectURL(new Blob([data], {

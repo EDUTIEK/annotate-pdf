@@ -9158,6 +9158,14 @@ class AnnotationEditorUIManager {
     const layer = this.#getLayerForTextLayer(textLayer);
     const isNoneMode = this.#mode === AnnotationEditorType.NONE;
     const callback = () => {
+      // edutiek-patch: begin
+      const markedContentId = anchorElement.closest('.markedContent').id;
+      const foundMarkedContent = (markedContentId || '').match(/^p(\d+)R_mc(\d+)$/);
+      const pageAndMarkedContentId = foundMarkedContent ? {
+        page: parseInt(foundMarkedContent[1]),
+        mc: parseInt(foundMarkedContent[2]),
+      } : null;
+      // edutiek-patch: end
       const editor = layer?.createAndAddNewEditor({
         x: 0,
         y: 0
@@ -9168,7 +9176,10 @@ class AnnotationEditorUIManager {
         anchorOffset,
         focusNode,
         focusOffset,
-        text
+        // edutiek-patch: begin
+        text,
+        pageAndMC: pageAndMarkedContentId,
+        // edutiek-patch: end
       });
       if (isNoneMode) {
         this.showAllEditors("highlight", true, true);
@@ -11114,6 +11125,7 @@ class AnnotationEditor {
     this._willKeepAspectRatio = false;
     this._initialOptions.isCentered = parameters.isCentered;
     this._structTreeParentId = null;
+    this.pageAndMC = parameters.pageAndMC;
     this.annotationElementId = parameters.annotationElementId || null;
     this.creationDate = parameters.creationDate || new Date();
     this.modificationDate = parameters.modificationDate || null;
@@ -12276,7 +12288,8 @@ class AnnotationEditor {
       rect: this.getPDFRect(),
       rotation: this.rotation,
       structTreeParentId: this._structTreeParentId,
-      popupRef: this._initialData?.popupRef || ""
+      popupRef: this._initialData?.popupRef || "",
+      pageAndMC: this.pageAndMC,
     };
   }
   static async deserialize(data, parent, uiManager) {
@@ -28393,11 +28406,17 @@ class HighlightEditor extends AnnotationEditor {
       color,
       quadPoints,
       inkLists,
-      opacity
+      opacity,
+      // edutiek-patch: begin
+      pageAndMC,
+      // edutiek-patch: end
     } = data;
     const editor = await super.deserialize(data, parent, uiManager);
     editor.color = Util.makeHexColor(...color);
     editor.opacity = opacity || 1;
+    // edutiek-patch: begin
+    editor.pageAndMC = pageAndMC;
+    // edutiek-patch: end
     if (inkLists) {
       editor.#thickness = data.thickness;
     }
@@ -28478,6 +28497,7 @@ class HighlightEditor extends AnnotationEditor {
       // edutiek-patch: begin
       outlines: this.#serializeOutlines(serialized.rect),
       contents: this.contents,
+      pageAndMC: this.pageAndMC,
       // edutiek-patch: end
     });
     this.addComment(serialized);
