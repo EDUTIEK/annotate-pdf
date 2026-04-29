@@ -27726,6 +27726,11 @@ class HighlightEditor extends AnnotationEditor {
       this._uiManager.a11yAlert("pdfjs-editor-highlight-added-alert");
     }
   }
+  // edutiek-patch: begin
+  getPathNode() {
+    return this.parent.drawLayer.getSvgNode(this.#id).querySelector('path');
+  }
+  // edutiek-patch: end
   get telemetryInitialData() {
     return {
       action: "added",
@@ -28409,6 +28414,7 @@ class HighlightEditor extends AnnotationEditor {
       opacity,
       // edutiek-patch: begin
       pageAndMC,
+      underline,
       // edutiek-patch: end
     } = data;
     const editor = await super.deserialize(data, parent, uiManager);
@@ -28416,6 +28422,7 @@ class HighlightEditor extends AnnotationEditor {
     editor.opacity = opacity || 1;
     // edutiek-patch: begin
     editor.pageAndMC = pageAndMC;
+    editor.underline = underline;
     // edutiek-patch: end
     if (inkLists) {
       editor.#thickness = data.thickness;
@@ -28498,6 +28505,7 @@ class HighlightEditor extends AnnotationEditor {
       outlines: this.#serializeOutlines(serialized.rect),
       contents: this.contents,
       pageAndMC: this.pageAndMC,
+      underline: this.underline,
       // edutiek-patch: end
     });
     this.addComment(serialized);
@@ -32563,6 +32571,11 @@ class DrawLayer {
   }) {
     this.pageIndex = pageIndex;
   }
+  // edutiek-patch: begin
+  getSvgNode(id) {
+    return this.#mapping.get(id);
+  }
+  // edutiek-patch: end
   setParent(parent) {
     if (!this.#parent) {
       this.#parent = parent;

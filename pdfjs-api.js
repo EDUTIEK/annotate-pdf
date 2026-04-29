@@ -11,6 +11,7 @@
  * }} Annotation
  *
  * @typedef {string} Color // all hex forms are valid but names are not. E.g. `#FF003377` is valid but `green` is not.
+ * @typedef {string} Mode // 'marker' or 'underline'
  *
  * @param {string} parent   id of the parent element to add the iframe
  * @param {string} viewer   url of the viewer html (source of iframe, without parameter)
@@ -35,6 +36,7 @@
  *   setDefaultColor: {function(Color): Promise},
  *   buildBlob: {function(): Promise<Blob>},
  *   enableFreeFormHighlight: {function(bool): Promise},
+ *   setDrawMode: {function(Mode): Promise},
  * }}
  */
 export default (parent, viewer, pdf, options = {}) => {
@@ -87,6 +89,7 @@ export default (parent, viewer, pdf, options = {}) => {
         setDefaultColor: color => request('setDefaultColor', color),
         buildBlob: () => request('buildBlob'),
 	enableFreeFormHighlight: bool => request('enableFreeFormHighlight', bool),
+        setDrawMode: mode => request('setDrawMode', mode),
     };
 
     function request(name, ...args)

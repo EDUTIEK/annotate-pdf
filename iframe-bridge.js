@@ -29,6 +29,7 @@ function setup(dispatch, ready){
     let updating = null; // Used to streamline updating, to prevent bogus create & delete events.
     let deletedIds = []; // Used to prevent 'delete' events that are triggered manually.
     let lastDeleted = {}; // For undo to work
+    let currentMode = 'marker';
     const selected = state(null, (oldOne, newOne) => {
         selecting = null;
         const ret = (oldOne || {}).returnPending;
@@ -62,6 +63,7 @@ function setup(dispatch, ready){
                 entries.push(entry);
                 sync(entry, 'create', layer => {
                     return layer.deserialize(newOne.intern).then(editor => {
+                        adjustEditor(editor, newOne.intern);
                         entry.editor = editor;
                         if(entry.text){
                             editor.contents = entry.text;
@@ -128,6 +130,14 @@ function setup(dispatch, ready){
 		document.querySelector('#viewer').classList[bool ? 'remove' : 'add']('disable-freeform-highlight');
 		manager.disableFreeForm = !bool;
 	    },
+            setDrawMode: mode => new Promise((ok, err) => {
+                if (['marker', 'underline'].includes(mode)) {
+                    currentMode = mode;
+                    ok();
+                } else {
+                    err('Invalid mode given: ' + mode);
+                }
+            }),
         };
 
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));
@@ -190,6 +200,7 @@ function setup(dispatch, ready){
             if(!entry){
                 Promise.all(entries.filter(x => x.page === page).map(x => sync(x, 'checkCreate', Void))).then(() => {
                     if(entryByEditor(editor)){return;}
+		    adjustEditorForMode(editor, currentMode);
                     const id = lastDeleted.internId === editor.id ? lastDeleted.id : uuid();
                     const entry = {id, page, editor, intern: pdfSerializeEditor(editor)};
                     const extern = externEntry(entry);
@@ -240,6 +251,24 @@ function setup(dispatch, ready){
             return entries.find(x => x.id === id);
         }
     });
+}
+
+function adjustEditor(editor, serializedEditor)
+{
+    if (serializedEditor.underline) {
+        editor.underline = true;
+        const pathNode = editor.getPathNode();
+        pathNode.setAttribute('d', pathNode.getAttribute('d').replace('V0', 'V0.85'));
+    }
+}
+
+function adjustEditorForMode(editor, mode)
+{
+    if (mode === 'underline') {
+        editor.underline = true;
+        const pathNode = editor.getPathNode();
+        pathNode.setAttribute('d', pathNode.getAttribute('d').replace('V0', 'V0.85'));
+    }
 }
 
 function externEntry(entry)

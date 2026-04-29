@@ -59791,15 +59791,30 @@ class HighlightAnnotation extends MarkupAnnotation {
     }
     const appearanceBuffer = [`${getPdfColor(color, true)}`, "/R0 gs"];
     const buffer = [];
-    for (const outline of outlines) {
-      buffer.length = 0;
-      buffer.push(`${numberToString(outline[0])} ${numberToString(outline[1])} m`);
-      for (let i = 2, ii = outline.length; i < ii; i += 2) {
-        buffer.push(`${numberToString(outline[i])} ${numberToString(outline[i + 1])} l`);
+    // edutiek-patch: begin
+    if (annotation.underline) {
+      appearanceBuffer.push('0 0 0 rg');
+      appearanceBuffer.push('/DeviceRGB CS');
+      for (const outline of outlines) {
+        appearanceBuffer.push('1 0 0 SCN');
+        appearanceBuffer.push('2 w');
+        // appearanceBuffer.push('[5 5] 0 d');
+        appearanceBuffer.push(`${numberToString(outline[0])} ${numberToString(outline[1] + 2)} m`);
+        appearanceBuffer.push(`${numberToString(outline[6])} ${numberToString(outline[7] + 2)} l`);
+        appearanceBuffer.push('S');
       }
-      buffer.push("h");
-      appearanceBuffer.push(buffer.join("\n"));
+    } else {
+	for (const outline of outlines) {
+	  buffer.length = 0;
+	  buffer.push(`${numberToString(outline[0])} ${numberToString(outline[1])} m`);
+	  for (let i = 2, ii = outline.length; i < ii; i += 2) {
+	    buffer.push(`${numberToString(outline[i])} ${numberToString(outline[i + 1])} l`);
+	  }
+	  buffer.push("h");
+	  appearanceBuffer.push(buffer.join("\n"));
+	}
     }
+    // edutiek-patch: end
     appearanceBuffer.push("f*");
     const appearance = appearanceBuffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
