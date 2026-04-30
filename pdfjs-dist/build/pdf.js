@@ -9159,7 +9159,7 @@ class AnnotationEditorUIManager {
     const isNoneMode = this.#mode === AnnotationEditorType.NONE;
     const callback = () => {
       // edutiek-patch: begin
-      const markedContentId = anchorElement.closest('.markedContent').id;
+      const markedContentId = anchorElement ? (anchorElement.closest('.markedContent') || {}).id : null;
       const foundMarkedContent = (markedContentId || '').match(/^p(\d+)R_mc(\d+)$/);
       const pageAndMarkedContentId = foundMarkedContent ? {
         page: parseInt(foundMarkedContent[1]),
