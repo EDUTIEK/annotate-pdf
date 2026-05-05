@@ -59793,10 +59793,9 @@ class HighlightAnnotation extends MarkupAnnotation {
     const buffer = [];
     // edutiek-patch: begin
     if (annotation.underline) {
-      appearanceBuffer.push('0 0 0 rg');
       appearanceBuffer.push('/DeviceRGB CS');
       for (const outline of outlines) {
-        appearanceBuffer.push('1 0 0 SCN');
+        appearanceBuffer.push(getPdfColorArray(color).join(' ') + ' SCN');
         appearanceBuffer.push('2 w');
         // appearanceBuffer.push('[5 5] 0 d');
         appearanceBuffer.push(`${numberToString(outline[0])} ${numberToString(outline[1] + 2)} m`);

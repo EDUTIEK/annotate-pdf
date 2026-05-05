@@ -9274,7 +9274,9 @@ class AnnotationEditorUIManager {
     this.#dispatchUpdateStates({
       hasSelectedText: true
     });
-    if (this.#mode !== AnnotationEditorType.HIGHLIGHT && this.#mode !== AnnotationEditorType.NONE) {
+    // edutiek-patch: begin
+    if (this._eventBus.disableTextHighlight || this.#mode !== AnnotationEditorType.HIGHLIGHT && this.#mode !== AnnotationEditorType.NONE) {
+      // edutiek-patch: end
       return;
     }
     if (this.#mode === AnnotationEditorType.HIGHLIGHT) {
@@ -27729,6 +27731,9 @@ class HighlightEditor extends AnnotationEditor {
   // edutiek-patch: begin
   getPathNode() {
     return this.parent.drawLayer.getSvgNode(this.#id).querySelector('path');
+  }
+  getHightligtDiv() {
+    return this.#highlightDiv;
   }
   // edutiek-patch: end
   get telemetryInitialData() {
