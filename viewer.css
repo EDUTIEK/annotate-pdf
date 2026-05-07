@@ -20,7 +20,7 @@
     position: absolute;
     font-size: 12px;
     top: 0;
-    right: 0;
-    transform: translate(100%, -100%);
+    left: 0;
+    transform: translate(-100%, -100%);
     padding: 1px;
 }
