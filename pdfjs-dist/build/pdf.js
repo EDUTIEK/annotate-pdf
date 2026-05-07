@@ -9346,6 +9346,9 @@ class AnnotationEditorUIManager {
       this.#highlightWhenShiftUp = false;
       this.#onSelectEnd("main_toolbar");
     }
+    // edutiek-patch: begin
+    return; // Prevent bogus selection when focusing in again (trying to restore last selected element).
+    // edutiek-patch: end
     if (!this.hasSelection) {
       return;
     }
