@@ -66,7 +66,7 @@ function setup(dispatch, ready){
                 entries.push(entry);
                 sync(entry, 'create', layer => {
                     return layer.deserialize(newOne.intern).then(editor => {
-                        adjustEditor(editor, entry.type);
+                        adjustEditor(editor, entry.type, entry.color);
                         entry.editor = editor;
                         if(entry.text){
                             editor.contents = entry.text;
@@ -176,6 +176,9 @@ function setup(dispatch, ready){
                 sync(entry, 'setColor', () => {
                     entry.color = color;
                     entry.editor.updateParams(pdfjsLib.AnnotationEditorParamsType.HIGHLIGHT_COLOR, color);
+                    if (entry.type === 'wave') {
+                        entry.editor.getPathNode().setAttribute('stroke', color);
+                    }
                 });
             },
             setType: (id, type) => {
@@ -184,13 +187,9 @@ function setup(dispatch, ready){
                 }
                 const entry = entries.find(e => e.id === id);
                 sync(entry, 'setType', () => {
-                    entry.editor.underline = type === 'underline';
-                    if (entry.type === 'marker' && type === 'underline') {
-                        changeSvgToUnderline(entry.editor);
-                    } else if (entry.type === 'underline' && type === 'marker') {
-                        changeSvgToMarker(entry.editor);
-                    }
+                    entry.editor.edutiekType = type;
                     entry.type = type;
+                    adjustEditor(entry.editor, entry.type, entry.color);
                 });
             },
         };
@@ -257,7 +256,7 @@ function setup(dispatch, ready){
                     if(entryByEditor(editor)){return;}
 		    adjustEditor(editor, currentMode);
                     const id = lastDeleted.internId === editor.id ? lastDeleted.id : uuid();
-                    const entry = {id, page, editor, intern: pdfSerializeEditor(editor)};
+                    const entry = {id, page, editor, intern: pdfSerializeEditor(editor), type: currentMode};
                     const extern = externEntry(entry);
                     entries.push(entry);
                     dispatch('create', extern);
@@ -316,37 +315,47 @@ function createLabelDiv(label)
     return d;
 }
 
-function adjustEditor(editor, mode)
+function adjustEditor(editor, mode, color)
 {
-    if (mode === 'underline') {
-        editor.underline = true;
-        changeSvgToUnderline(editor);
-    }
+    editor.edutiekType = mode;
+    editor.originalPath ||= editor.getPathNode().getAttribute('d');
+    changeSvg(editor, mode, color);
 }
 
 function validDrawTypes()
 {
-    return ['marker', 'underline'];
+    return ['marker', 'underline', 'wave'];
 }
 
-function changeSvgToUnderline(editor)
+function changeSvg(editor, mode, color)
 {
-    changeSvgBlock(editor, (a, b) => a + b);
-}
-
-function changeSvgToMarker(editor)
-{
-    changeSvgBlock(editor, (a, b) => a - b);
-}
-
-function changeSvgBlock(editor, plus)
-{
-    if(!editor._mustFixPosition){
+    if(!editor._mustFixPosition){ // If it is a freeform highlight.
         return;
     }
+
+    color = color || pdfjsLib.HighlightEditor._defaultColor;
+    switch(mode){
+    case 'marker':    return changeSvgToMarker(editor, color);
+    case 'underline': return changeSvgToUnderline(editor, color);
+    case 'wave':      return changeSvgToWave(editor, color);
+    default:          throw new Error('Invalid type given to change SVG');
+    }
+}
+
+function changeSvgToMarker(editor, color)
+{
+    const node = editor.getPathNode();
+    node.setAttribute('d', editor.originalPath);
+    node.removeAttribute('fill');
+    node.removeAttribute('stroke-width');
+    node.removeAttribute('stroke');
+}
+
+function changeSvgToUnderline(editor, color)
+{
     const pathNode = editor.getPathNode();
     let newS = '';
-    let s = pathNode.getAttribute('d');
+    let s = editor.originalPath;
     const len = (s.split('M').length - 1);
     let m;
     let skip = false;
@@ -356,12 +365,46 @@ function changeSvgBlock(editor, plus)
         if (skip) {
             newS += s.substring(0, m.index + m[0].length);
         } else {
-            newS += s.substring(0, m.index) + 'V' + plus(Number(m[1]), shift);
+            newS += s.substring(0, m.index) + 'V' + (Number(m[1]) + shift);
         }
         s = s.substring(m.index + m[0].length);
         skip = !skip;
     }
     pathNode.setAttribute('d', newS);
+    pathNode.removeAttribute('stroke-width');
+    pathNode.removeAttribute('stroke');
+    pathNode.removeAttribute('fill');
+}
+
+function changeSvgToWave(editor, color)
+{
+    const pathNode = editor.getPathNode();
+    const svgNode = editor.getSvgNode();
+    const width = editor.getSvgNode().getBoundingClientRect().width;
+    const origPath = editor.originalPath;
+    const startY = Number(origPath.match(/M *([0-9.]+) +([0-9.]+)/)[2]);
+    const parts = origPath.split('M').slice(1);
+    const len = parts.length;
+    const pitch = 0.15 * startY;
+    const step = (1 / width) * 7;
+    const lineHeight = 1 / len;
+    const newPath = parts.map((part, i) => {
+        const [x, y, v1, h, v2] = part.match(/([0-9.]+) +([0-9.]+) +V *([0-9.]+) +H *([0-9.]+) +V *([0-9.]+)/).slice(1).map(x => Number(x));
+        const yy = (lineHeight * i) + (lineHeight * 0.9);
+        let s = `M${x} ${yy}`;
+        let dir = -1;
+        let n = x;
+        while (n < h) {
+            s += ` Q${n + (step / 2)} ${(yy) + (dir * pitch)} ${n + step} ${yy}`;
+            n += step;
+            dir = -dir;
+        }
+        return s;
+    }).join(' ');
+    pathNode.setAttribute('d', newPath);
+    pathNode.setAttribute('stroke', color);
+    pathNode.setAttribute('stroke-width', '1.1');
+    pathNode.setAttribute('fill', 'transparent');
 }
 
 function externEntry(entry)
@@ -374,7 +417,7 @@ function externEntry(entry)
         label: entry.label,
         pos: {x: entry.editor.x, y: entry.editor.y},
         color: entry.color || ('#' + entry.intern.color.map(c => (c < 16 ? '0' : '') + c.toString(16)).join('')),
-        type: entry.type || (entry.intern.underline ? 'underline' : 'marker'),
+        type: entry.type,
     };
 }
 

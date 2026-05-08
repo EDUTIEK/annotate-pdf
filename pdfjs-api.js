@@ -14,7 +14,7 @@
  * }} Annotation
  *
  * @typedef {string} Color // all hex forms are valid but names are not. E.g. `#FF003377` is valid but `green` is not.
- * @typedef {string} Type // 'marker' or 'underline'
+ * @typedef {string} Type // 'marker', 'underline' or 'wave'
  *
  * @param {string} parent   id of the parent element to add the iframe
  * @param {string} viewer   url of the viewer html (source of iframe, without parameter)
@@ -39,7 +39,7 @@
  *   setDefaultColor: {function(Color): Promise},
  *   buildBlob: {function(): Promise<Blob>},
  *   enableFreeFormHighlight: {function(bool): Promise},
-*    enableTextHighlight: {function(bool): Promise},
+ *   enableTextHighlight: {function(bool): Promise},
  *   setDrawMode: {function(Type): Promise},
  *   setLabel: {function(string, string): Promise},
  *   setText: {function(string, string): Promise},
