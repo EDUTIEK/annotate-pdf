@@ -45,6 +45,7 @@ function setup(dispatch, ready){
 
         const actions = {
             getAll: () => entries.map(externEntry),
+            get: id => externEntry(entries.find(e => e.id === id)),
             setAll: newOnes => {
                 entries.forEach(x => deleteEntry(x)); // Don't pass index as enableUndo
                 entries = [];
