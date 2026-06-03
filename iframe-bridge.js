@@ -40,6 +40,9 @@ function setup(dispatch, ready){
     uiManager(manager => {
         pdfOn('annotationeditorparamschanged', checkForChanges);
         pdfOn('switchannotationeditorparams', checkForChanges);
+        pdfOn('outlineloaded', event => event.currentOutlineItemPromise.then(enabled => {
+            document.querySelector('#viewsManagerToggleButton').disabled = !enabled;
+        }));
         pdfOnPageChanging(pageChanging);
 
         const actions = {
@@ -214,6 +217,7 @@ function setup(dispatch, ready){
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));
         ready(actions);
         PDFViewerApplication.viewsManager.setInitialView(0);
+        PDFViewerApplication.viewsManager.switchView(2); // Outline
         dispatch('ready');
 
         function deleteEntry(entry, enableUndo)
