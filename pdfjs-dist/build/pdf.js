@@ -28065,7 +28065,7 @@ class HighlightEditor extends AnnotationEditor {
         editor: this
       });
       // edutiek-patch: begin
-      return [["colorPicker", colorPicker], ['edutiek']];
+      return this.#isFreeHighlight ? [["colorPicker", colorPicker]] : [["colorPicker", colorPicker], ['edutiek']];
       // edutiek-patch: end
     }
     return super.toolbarButtons;
