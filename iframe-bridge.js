@@ -44,6 +44,11 @@ function setup(dispatch, ready){
             document.querySelector('#viewsManagerToggleButton').disabled = !enabled;
         }));
         pdfOnPageChanging(pageChanging);
+        pdfOn('edutiek-button', x => {
+            const entry = entryByEditor(x.source);
+            actions.setType(entry.id, x.type);
+            dispatch('update', externEntry(entry));
+        })
 
         const actions = {
             getAll: () => entries.map(externEntry),
@@ -364,6 +369,7 @@ function adjustEditor(editor, mode, color)
         const path = editor.getPathNode();
         editor.edutiekOriginalSvgData = {
             d: path.getAttribute('d'),
+            left: parseFloat(svg.style.left),
             width: parseFloat(svg.style.width),
             height: parseFloat(svg.style.height),
         }
@@ -374,6 +380,12 @@ function adjustEditor(editor, mode, color)
         }
     }
     changeSvg(editor, mode, color);
+    updateButtons(editor, mode);
+}
+
+function updateButtons(editor, mode)
+{
+    editor.selectButton && editor.selectButton(mode);
 }
 
 function validDrawTypes()
@@ -404,6 +416,7 @@ function resetSvg(editor)
     const svg = editor.getSvgNode();
     const path = editor.getPathNode();
     svg.setAttribute('viewBox', '0 0 1 1');
+    svg.style.left = editor.edutiekOriginalSvgData.left + '%';
     svg.style.width = editor.edutiekOriginalSvgData.width + '%';
     svg.style.height = editor.edutiekOriginalSvgData.height + '%';
     path.removeAttribute('fill');
