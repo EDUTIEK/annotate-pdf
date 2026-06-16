@@ -12394,6 +12394,7 @@ class AnnotationEditor {
       // edutiek-patch: begin
       popupRef: this._initialData?.popupRef || "",
       pageAndMC: this.pageAndMC,
+      edutiekLabel: this.edutiekLabel,
       // edutiek-patch: end
     };
   }

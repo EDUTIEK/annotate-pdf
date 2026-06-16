@@ -83,6 +83,9 @@ function setup(dispatch, ready){
                         if (entry.color) {
                             entry.editor.updateParams(pdfjsLib.AnnotationEditorParamsType.HIGHLIGHT_COLOR, entry.color);
                         }
+                        if (entry.label) {
+                            entry.editor.edutiekLabel = entry.label;
+                        }
                         pdfAddEditorToLayerNoFocus(layer, entry.editor, () => {
                             if(entry.label){
                                 entry.labelDiv = createLabelDiv(entry.label);
@@ -176,6 +179,7 @@ function setup(dispatch, ready){
                 const entry = entries.find(e => e.id === id);
                 sync(entry, 'setLabel', () => {
                     entry.label = label;
+                    entry.editor.edutiekLabel = entry.label;
                     if (entry.labelDiv) {
                         entry.labelDiv.textContent = label;
                     } else {
