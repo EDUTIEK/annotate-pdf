@@ -48,6 +48,11 @@ function setup(dispatch, ready){
             const entry = entryByEditor(x.source);
             actions.setType(entry.id, x.type);
             dispatch('update', externEntry(entry));
+        });
+        pdfOn('edutiek-token-button', x => {
+            const entry = entryByEditor(x.source);
+            actions.setToken(entry.id, x.type === entry.token ? null : x.type);
+            dispatch('update', externEntry(entry));
         })
 
         const actions = {
@@ -72,6 +77,7 @@ function setup(dispatch, ready){
                     type: newOne.type || (newOne.intern.underline ? 'underline' : 'marker'),
                     noDelete: newOne.noDelete,
                     pos: newOne.pos,
+                    token: newOne.token,
                 };
                 entries.push(entry);
                 sync(entry, 'create', layer => {
@@ -90,6 +96,9 @@ function setup(dispatch, ready){
                             if(entry.label){
                                 entry.labelDiv = createLabelDiv(entry.label);
                                 editor.getHightligtDiv().parentNode.appendChild(entry.labelDiv);
+                            }
+                            if(entry.token){
+                                adjustEntryToken(entry);
                             }
                         });
                         adjustEditor(editor, entry.type, entry.color);
@@ -221,6 +230,16 @@ function setup(dispatch, ready){
                 entry.noDelete = !bool;
                 updateDeletable(entry);
             },
+            setToken: (id, token) => {
+                if (!validTokenTypes().includes(token) && token !== null) {
+                    throw new Error('Invalid token type: ' + token);
+                }
+                const entry = entries.find(e => e.id === id);
+                sync(entry, 'setToken', () => {
+                    entry.token = token;
+                    adjustEntryToken(entry);
+                });
+            }
         };
 
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));
@@ -387,6 +406,27 @@ function adjustEditor(editor, mode, color)
     updateButtons(editor, mode);
 }
 
+function adjustEntryToken(entry)
+{
+    entry.editor.selectTokenButton && entry.editor.selectTokenButton(entry.token);
+    entry.editor.edutiekToken = entry.token;
+    if (!entry.tokenDiv) {
+        if (entry.token === null) {
+            return;
+        }
+        entry.tokenDiv = document.createElement('div');
+        entry.editor.getHightligtDiv().parentNode.appendChild(entry.tokenDiv);
+    } else if (entry.token === null) {
+        entry.tokenDiv.remove();
+        entry.tokenDiv = null;
+        return;
+    }
+    entry.tokenDiv.className = 'annotation-token annotation-token-' + entry.token;
+    requestAnimationFrame(() => {
+        entry.tokenDiv.style.left = (entry.editor.getVerticalEdges()[1][0] * entry.editor.getHightligtDiv().getBoundingClientRect().width) + 'px';
+    });
+}
+
 function updateButtons(editor, mode)
 {
     editor.selectButton && editor.selectButton(mode);
@@ -395,6 +435,11 @@ function updateButtons(editor, mode)
 function validDrawTypes()
 {
     return ['marker', 'underline', 'wave', 'vline'];
+}
+
+function validTokenTypes()
+{
+    return ['question-mark', 'exclamation-point', 'cross', 'missing'];
 }
 
 function changeSvg(editor, mode, color)
@@ -451,8 +496,8 @@ function changeSvgToWave(editor, color)
     const pathNode = editor.getPathNode();
     const svg = editor.getSvgNode();
     const rect = svg.getBoundingClientRect();
-    const width = parseFloat(editor.getSvgNode().style.width);
-    const height = parseFloat(editor.getSvgNode().style.height);
+    const width = parseFloat(svg.style.width);
+    const height = parseFloat(svg.style.height);
     const v = editor.getVerticalEdges();
     const rr = document.querySelector('.textLayer').getBoundingClientRect();
     const pitch = (1 / height) * 0.25;
@@ -523,6 +568,7 @@ function externEntry(entry)
         color: entry.color || ('#' + entry.intern.color.map(c => (c < 16 ? '0' : '') + c.toString(16)).join('')),
         type: entry.type,
         noDelete: Boolean(entry.noDelete),
+        token: entry.token,
     };
 }
 

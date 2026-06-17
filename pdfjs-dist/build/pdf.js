@@ -8069,6 +8069,37 @@ class EditorToolbar {
       buttons.find(b => b.classList.contains('edutiek-button-' + name)).classList.add('edutiek-button-selected');
     }
   }
+  addEdutiekTokenButton() {
+    const {_uiManager} = this.#editor;
+    const buttons = [];
+    ['question-mark', 'exclamation-point', 'cross', 'missing'].forEach(addButton.bind(this));
+    this.#editor.selectTokenButton = selectButton;
+    this.#buttons.append(this.#divider);
+
+    function addButton(name)
+    {
+      const button = document.createElement('button');
+      button.classList.add('basic', 'edutiek-button', 'edutiek-button-' + name);
+      if (name === this.#editor.edutiekToken) {
+        button.classList.add('edutiek-button-selected-token');
+      }
+      button.tabIndex = 0;
+      if (this.#addListenersToElement(button)) {
+        button.addEventListener('click', e => {
+          _uiManager._eventBus.dispatch('edutiek-token-button', {source: this.#editor, type: name});
+        }, {signal: _uiManager._signal});
+      }
+      this.#buttons.append(button);
+      buttons.push(button);
+    }
+
+    function selectButton(name)
+    {
+      buttons.forEach(b => b.classList.remove('edutiek-button-selected-token'));
+      const b = buttons.find(b => b.classList.contains('edutiek-button-' + name));
+      b && b.classList.add('edutiek-button-selected-token');
+    }
+  }
   // edutiek-patch: end
   addDeleteButton() {
     const {
@@ -8170,6 +8201,10 @@ class EditorToolbar {
       // edutiek-patch: begin
       case 'edutiek':
         this.addEdutiekButton();
+        break;
+      case 'edutiek-token':
+        this.addEdutiekTokenButton();
+        break;
       // edutiek-patch: end
     }
   }
@@ -12395,6 +12430,7 @@ class AnnotationEditor {
       popupRef: this._initialData?.popupRef || "",
       pageAndMC: this.pageAndMC,
       edutiekLabel: this.edutiekLabel,
+      edutiekToken: this.edutiekToken,
       // edutiek-patch: end
     };
   }
@@ -28066,7 +28102,7 @@ class HighlightEditor extends AnnotationEditor {
         editor: this
       });
       // edutiek-patch: begin
-      return this.#isFreeHighlight ? [["colorPicker", colorPicker]] : [["colorPicker", colorPicker], ['edutiek']];
+      return this.#isFreeHighlight ? [["colorPicker", colorPicker]] : [["colorPicker", colorPicker], ['edutiek-token'], ['edutiek']];
       // edutiek-patch: end
     }
     return super.toolbarButtons;

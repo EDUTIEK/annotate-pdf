@@ -59879,7 +59879,7 @@ class HighlightAnnotation extends MarkupAnnotation {
     const resources = new Dict(xref);
     const extGState = new Dict(xref);
     resources.set("ExtGState", extGState);
-    if (annotation.edutiekLabel) {
+    let ensureFontInResources = () => {
       const font = new Dict(xref);
       const baseFont = new Dict(xref);
       baseFont.setIfName('BaseFont', 'Helvetica');
@@ -59888,13 +59888,25 @@ class HighlightAnnotation extends MarkupAnnotation {
       baseFont.setIfName('Encoding', 'WinAnsiEncoding');
       font.set('F1', baseFont);
       resources.set('Font', font);
-      const f = await WidgetAnnotation._getFontData(params.evaluator, params.task, {
+      ensureFontInResources = () => {};
+    };
+    const getFont = fontSize => {
+      ensureFontInResources();
+      const f = WidgetAnnotation._getFontData(params.evaluator, params.task, {
         fontName: 'F1',
-        fontSize: 8.0,
+        fontSize,
       }, resources);
-      const scale = 8.0 / 1000;
-      const width = f.charsToGlyphs(annotation.edutiekLabel).reduce((l, g) => g.width * scale + l, 0);
-      const height = LINE_FACTOR * 8.0;
+      return f;
+    };
+    const calcTextSize = (text, fontSize, f) => {
+      const scale = fontSize / 1000;
+      const width = f.charsToGlyphs(text).reduce((l, g) => g.width * scale + l, 0);
+      const height = LINE_FACTOR * fontSize;
+      return {width, height};
+    };
+    if (annotation.edutiekLabel) {
+      const f = await getFont(8.0);
+      const {width, height} = calcTextSize(annotation.edutiekLabel, 8.0, f);
       const shift = height / 3;
       rect[0] -= width;
       rect[3] += height;
@@ -59909,6 +59921,44 @@ class HighlightAnnotation extends MarkupAnnotation {
       ].map(numberToString).join(' ') + ' re f');
       appearanceBuffer.push(`${getPdfColor([0xFF, 0xFF, 0xFF], true)}`);
       appearanceBuffer.push(`BT ${numberToString((leftPosOverwrite || outlines[0][0]) - width)} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString(annotation.edutiekLabel).map(escapeString).join('')})] TJ ET`);
+    }
+    let f;
+    switch (annotation.edutiekToken) {
+    case 'cross':
+      appearanceBuffer.push('/DeviceRGB cs');
+      appearanceBuffer.push('/R1 gs');
+      appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4])} ${numberToString(outlines[0][3] + 10)} m`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4] + 10)} ${numberToString(outlines[0][3])} l`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4] + 10)} ${numberToString(outlines[0][3] + 10)} m`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} l`);
+      appearanceBuffer.push('S');
+      rect[2] += 20;
+      break;
+    case 'question-mark':
+      f = await getFont(8.0);
+      appearanceBuffer.push('/DeviceRGB cs');
+      appearanceBuffer.push('/R1 gs');
+      appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
+      appearanceBuffer.push(`BT ${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString('?').map(escapeString).join('')})] TJ ET`);
+      rect[2] += calcTextSize('?', 8.0, f).width;
+      break;
+    case 'exclamation-point':
+      f = await getFont(8.0);
+      appearanceBuffer.push('/DeviceRGB cs');
+      appearanceBuffer.push('/R1 gs');
+      appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
+      appearanceBuffer.push(`BT ${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString('!').map(escapeString).join('')})] TJ ET`);
+      rect[2] += calcTextSize('!', 8.0, f).width;
+      break;
+    case 'missing':
+      f = await getFont(8.0);
+      appearanceBuffer.push('/DeviceRGB cs');
+      appearanceBuffer.push('/R1 gs');
+      appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
+      appearanceBuffer.push(`BT ${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString('fehlt!').map(escapeString).join('')})] TJ ET`);
+      rect[2] += calcTextSize('fehlt!', 8.0, f).width;
+      break;
     }
     // edutiek-patch: end
     const appearance = appearanceBuffer.join("\n");
