@@ -8072,7 +8072,7 @@ class EditorToolbar {
   addEdutiekTokenButton() {
     const {_uiManager} = this.#editor;
     const buttons = [];
-    ['question-mark', 'exclamation-point', 'cross', 'missing'].forEach(addButton.bind(this));
+    ['question-mark', 'exclamation-point', 'cross', 'check', 'missing'].forEach(addButton.bind(this));
     this.#editor.selectTokenButton = selectButton;
     this.#buttons.append(this.#divider);
 

@@ -59813,6 +59813,7 @@ class HighlightAnnotation extends MarkupAnnotation {
       row(qp.length - 8);
     }
     let leftPosOverwrite = false;
+    const rectBaseYTop = rect[3];
     switch(annotation.edutiekType){
     case 'underline':
       appearanceBuffer.push('/DeviceRGB CS');
@@ -59909,7 +59910,7 @@ class HighlightAnnotation extends MarkupAnnotation {
       const {width, height} = calcTextSize(annotation.edutiekLabel, 8.0, f);
       const shift = height / 3;
       rect[0] -= width;
-      rect[3] += height;
+      rect[3] = Math.max(rectBaseYTop + height, rect[3]);
       appearanceBuffer.push('/DeviceRGB cs');
       appearanceBuffer.push('/R1 gs');
       appearanceBuffer.push(`${getPdfColor([0x60, 0x60, 0x60], true)}`);
@@ -59922,18 +59923,32 @@ class HighlightAnnotation extends MarkupAnnotation {
       appearanceBuffer.push(`${getPdfColor([0xFF, 0xFF, 0xFF], true)}`);
       appearanceBuffer.push(`BT ${numberToString((leftPosOverwrite || outlines[0][0]) - width)} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString(annotation.edutiekLabel).map(escapeString).join('')})] TJ ET`);
     }
-    let f;
+    let f, fontSize;
     switch (annotation.edutiekToken) {
     case 'cross':
       appearanceBuffer.push('/DeviceRGB cs');
       appearanceBuffer.push('/R1 gs');
-      appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
-      appearanceBuffer.push(`${numberToString(outlines[0][4])} ${numberToString(outlines[0][3] + 10)} m`);
-      appearanceBuffer.push(`${numberToString(outlines[0][4] + 10)} ${numberToString(outlines[0][3])} l`);
-      appearanceBuffer.push(`${numberToString(outlines[0][4] + 10)} ${numberToString(outlines[0][3] + 10)} m`);
+      appearanceBuffer.push(`${getPdfColor([0, 0, 0])}`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4])} ${numberToString(outlines[0][3] + 6)} m`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4] + 6)} ${numberToString(outlines[0][3])} l`);
+      appearanceBuffer.push(`${numberToString(outlines[0][4] + 6)} ${numberToString(outlines[0][3] + 6)} m`);
       appearanceBuffer.push(`${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} l`);
       appearanceBuffer.push('S');
       rect[2] += 20;
+      rect[3] = Math.max(rectBaseYTop + 10, rect[3]);
+      break;
+    case 'check':
+      appearanceBuffer.push('/DeviceRGB cs');
+      appearanceBuffer.push('/R1 gs');
+      appearanceBuffer.push(`${getPdfColor([0, 0, 0])}`);
+      const basePos = {x: outlines[0][4] + 4, y: outlines[0][3] + 2};
+      appearanceBuffer.push(`${numberToString(basePos.x)} ${numberToString(basePos.y)} m`);
+      appearanceBuffer.push(`${numberToString(basePos.x + 7)} ${numberToString(basePos.y + 7)} l`);
+      appearanceBuffer.push(`${numberToString(basePos.x + 0.33)} ${numberToString(basePos.y - 0.33)} m`);
+      appearanceBuffer.push(`${numberToString(basePos.x - 3)} ${numberToString(basePos.y + 3)} l`);
+      appearanceBuffer.push('S');
+      rect[2] += 20;
+      rect[3] = Math.max(rectBaseYTop + 10, rect[3]);
       break;
     case 'question-mark':
       f = await getFont(8.0);
@@ -59941,7 +59956,9 @@ class HighlightAnnotation extends MarkupAnnotation {
       appearanceBuffer.push('/R1 gs');
       appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
       appearanceBuffer.push(`BT ${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString('?').map(escapeString).join('')})] TJ ET`);
-      rect[2] += calcTextSize('?', 8.0, f).width;
+      fontSize = calcTextSize('?', 8.0, f);
+      rect[2] += fontSize.width;
+      rect[3] = Math.max(rectBaseYTop + fontSize.height, rect[3]);
       break;
     case 'exclamation-point':
       f = await getFont(8.0);
@@ -59949,7 +59966,9 @@ class HighlightAnnotation extends MarkupAnnotation {
       appearanceBuffer.push('/R1 gs');
       appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
       appearanceBuffer.push(`BT ${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString('!').map(escapeString).join('')})] TJ ET`);
-      rect[2] += calcTextSize('!', 8.0, f).width;
+      fontSize = calcTextSize('!', 8.0, f);
+      rect[2] += fontSize.width;
+      rect[3] = Math.max(rectBaseYTop + fontSize.height, rect[3]);
       break;
     case 'missing':
       f = await getFont(8.0);
@@ -59957,7 +59976,9 @@ class HighlightAnnotation extends MarkupAnnotation {
       appearanceBuffer.push('/R1 gs');
       appearanceBuffer.push(`${getPdfColor([0, 0, 0], true)}`);
       appearanceBuffer.push(`BT ${numberToString(outlines[0][4])} ${numberToString(outlines[0][3])} Td /F1 8.0 Tf [(${f.encodeString('fehlt!').map(escapeString).join('')})] TJ ET`);
-      rect[2] += calcTextSize('fehlt!', 8.0, f).width;
+      fontSize = calcTextSize('fehlt!', 8.0, f);
+      rect[2] += fontSize.width;
+      rect[3] = Math.max(rectBaseYTop + fontSize.height, rect[3]);
       break;
     }
     // edutiek-patch: end

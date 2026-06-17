@@ -190,8 +190,13 @@ function setup(dispatch, ready){
                     entry.label = label;
                     entry.editor.edutiekLabel = entry.label;
                     if (entry.labelDiv) {
-                        entry.labelDiv.textContent = label;
-                    } else {
+                        if (label) {
+                            entry.labelDiv.textContent = label;
+                        } {
+                            entry.labelDiv.remove();
+                            entry.labelDiv = null;
+                        }
+                    } else if (entry.label) {
                         entry.labelDiv = createLabelDiv(entry.label);
                         entry.editor.getHightligtDiv().parentNode.appendChild(entry.labelDiv);
                     }
@@ -439,7 +444,7 @@ function validDrawTypes()
 
 function validTokenTypes()
 {
-    return ['question-mark', 'exclamation-point', 'cross', 'missing'];
+    return ['question-mark', 'exclamation-point', 'cross', 'check', 'missing'];
 }
 
 function changeSvg(editor, mode, color)

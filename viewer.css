@@ -84,6 +84,12 @@
     mask-image: url(cross.svg);
 }
 
+.edutiek-button-check::before,
+.annotation-token-check
+{
+    mask-image: url(check.svg);
+}
+
 .edutiek-button-missing::before,
 .annotation-token-missing
 {
