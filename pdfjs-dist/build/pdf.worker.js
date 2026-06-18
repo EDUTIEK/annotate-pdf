@@ -62858,6 +62858,9 @@ class Page {
     }
     const dict = pageDict.clone();
     dict.set("Annots", annotationsArray);
+    // edutiek-patch: begin
+    dict.set('Tabs', Name.get('S'));
+    // edutiek-patch: end
     changes.put(this.ref, {
       data: dict
     });
@@ -67310,8 +67313,8 @@ const edutiek = (function(){
       if (num === structParent) {
         for (let x of nums) {
           const element = x instanceof Ref ? xref.fetch(x) : x;
-          if (element && element.get && element.get('K') instanceof Array) {
-            for (let y of element.get('K')) {
+          if (element && element.get) {
+            for (let y of asArray(element.get('K'))) {
               if (y === annotation.pageAndMC.mc) {
                 return [x, element];
               }
