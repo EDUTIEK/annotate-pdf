@@ -477,6 +477,11 @@ function resetSvg(editor)
     path.removeAttribute('stroke-width');
     path.removeAttribute('stroke');
     path.setAttribute('d', editor.edutiekOriginalSvgData.d);
+    if (editor.edutiekSvgNodes) {
+        editor.edutiekSvgNodes.path.remove();
+        editor.edutiekSvgNodes.use.remove();
+        editor.edutiekSvgNodes = null;
+    }
 }
 
 function changeSvgToUnderline(editor, color)
@@ -485,20 +490,20 @@ function changeSvgToUnderline(editor, color)
     const pathNode = editor.getPathNode();
     const height = parseFloat(svg.style.height);
     const vh = 1 + (0.25 / height);
-    pathNode.setAttribute('d', drawSvgLines(
+    const bg = setupSvgNodes(editor);
+    editor.getPathNode().setAttribute('fill', 'transparent');
+    bg.setAttribute('d', drawSvgLines(
         editor.getVerticalEdges(),
         (x1, x2, y) => `M${x1} ${y} L${x2} ${y} `
     ));
-    pathNode.setAttribute('stroke-width', '1.4');
-    pathNode.setAttribute('stroke', color);
-    // pathNode.removeAttribute('fill');
+    bg.setAttribute('stroke-width', '1.4');
+    bg.setAttribute('stroke', color);
     svg.setAttribute('viewBox', `0 0 1 ${vh}`);
     svg.style.height = `${height * vh}%`;
 }
 
 function changeSvgToWave(editor, color)
 {
-    const pathNode = editor.getPathNode();
     const svg = editor.getSvgNode();
     const rect = svg.getBoundingClientRect();
     const width = parseFloat(svg.style.width);
@@ -507,7 +512,9 @@ function changeSvgToWave(editor, color)
     const rr = document.querySelector('.textLayer').getBoundingClientRect();
     const pitch = (1 / height) * 0.25;
     const step = (1 / width) * 0.5;
-    pathNode.setAttribute('d', drawSvgLines(v, (x1, x2, y) => {
+    const bg = setupSvgNodes(editor);
+    editor.getPathNode().setAttribute('fill', 'transparent');
+    bg.setAttribute('d', drawSvgLines(v, (x1, x2, y) => {
         let path = `M${x1} ${y} `;
         let x = x1;
         let dir = -1;
@@ -518,9 +525,9 @@ function changeSvgToWave(editor, color)
         }
         return path; // + waveRest(x, x2, step, pitch, dir, y, editor.yid);
     }));
-    pathNode.setAttribute('stroke-width', '1.4');
-    pathNode.setAttribute('stroke', color);
-    pathNode.setAttribute('fill', 'transparent');
+    bg.setAttribute('stroke-width', '1.4');
+    bg.setAttribute('stroke', color);
+    bg.setAttribute('fill', 'transparent');
     svg.setAttribute('viewBox', `0 0 1 ${1 + pitch}`);
     svg.style.height = `${height * (1 + pitch)}%`;
 }
@@ -552,13 +559,35 @@ function waveRest(startX, endX, step, pitch, dir, y, aaa)
 
 function changeSvgToVLine(editor, color)
 {
-    const pathNode = editor.getPathNode();
     const svg = editor.getSvgNode();
     let leftAlign = parseFloat(editor.leftAlign) - 0.9;
     svg.style.left = leftAlign + '%';
 
     const w = (1 / svg.getBoundingClientRect().width) * 5;
-    pathNode.setAttribute('d', `M0 0 V 1 H ${w} V 0 z`);
+    setupSvgNodes(editor).setAttribute('d', `M0 0 V 1 H ${w} V 0 z`);
+    editor.getPathNode().setAttribute('fill', 'transparent');
+}
+
+function setupSvgNodes(editor)
+{
+    if (editor.edutiekSvgNodes) {
+        return editor.edutiekSvgNodes.path;
+    }
+    editor.edutiekSvgNodes = {
+        path: document.createElementNS('http://www.w3.org/2000/svg', 'path'),
+        use: document.createElementNS('http://www.w3.org/2000/svg', 'use'),
+    };
+    const pathNode = editor.getPathNode();
+    const id = pathNode.getAttribute('id') + '_rect';
+
+    editor.edutiekSvgNodes.path.setAttribute('vector-effect', 'non-scaling-stroke');
+    editor.edutiekSvgNodes.path.setAttribute('id', id);
+    editor.edutiekSvgNodes.use.setAttribute('href', '#' + id);
+
+    pathNode.parentNode.appendChild(editor.edutiekSvgNodes.path);
+    editor.getSvgNode().appendChild(editor.edutiekSvgNodes.use);
+
+    return editor.edutiekSvgNodes.path;
 }
 
 function externEntry(entry)
