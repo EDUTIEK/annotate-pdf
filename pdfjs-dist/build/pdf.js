@@ -12420,6 +12420,13 @@ class AnnotationEditor {
     };
   }
   serialize(isForCopying = false, context = null) {
+    // edutiek-patch: begin
+    const colorHex2Array = color => color ? [
+      color.substr(1, 2),
+      color.substr(3, 2),
+      color.substr(5, 2)
+    ].map(x => parseInt(x, 16)) : null;
+    // edutiek-patch: end
     return {
       annotationType: this.mode,
       pageIndex: this.pageIndex,
@@ -12431,6 +12438,8 @@ class AnnotationEditor {
       pageAndMC: this.pageAndMC,
       edutiekLabel: this.edutiekLabel,
       edutiekToken: this.edutiekToken,
+      edutiekTokenColor: colorHex2Array(this.edutiekTokenColor),
+      edutiekLineColor: colorHex2Array(this.edutiekLineColor),
       // edutiek-patch: end
     };
   }
