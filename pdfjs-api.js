@@ -56,6 +56,8 @@
  *   setType: {function(string, Type): Promise},
  *   setDeletable: {function(string, bool): Promise},
  *   setToken: {function{string, Token}: Promise},
+ *   enableTokenButtons(bool),
+ *   enableTypeButtons(bool),
  * }}
  */
 export default (parent, viewer, pdf, options = {}) => {
@@ -119,6 +121,9 @@ export default (parent, viewer, pdf, options = {}) => {
         setTokenColor: (id, color) => request('setTokenColor', id, color),
         setType: (id, type) => request('setType', id, type),
         setDeletable: (id, deletable) => request('setDeletable', id, deletable),
+        setToken: (id, token) => request('setToken', id, token),
+        enableTokenButtons: bool => request('enableTokenButtons', bool),
+        enableTypeButtons: bool => request('enableTypeButtons', bool),
     };
 
     function request(name, ...args)

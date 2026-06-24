@@ -8049,7 +8049,7 @@ class EditorToolbar {
     function addButton(name)
     {
       const button = document.createElement('button');
-      button.classList.add('basic', 'edutiek-button', 'edutiek-button-' + name);
+      button.classList.add('basic', 'edutiek-button', 'edutiek-type-button', 'edutiek-button-' + name);
       if (name === this.#editor.edutiekType) {
         button.classList.add('edutiek-button-selected');
       }
@@ -8079,7 +8079,7 @@ class EditorToolbar {
     function addButton(name)
     {
       const button = document.createElement('button');
-      button.classList.add('basic', 'edutiek-button', 'edutiek-button-' + name);
+      button.classList.add('basic', 'edutiek-button', 'edutiek-token-button', 'edutiek-button-' + name);
       if (name === this.#editor.edutiekToken) {
         button.classList.add('edutiek-button-selected-token');
       }

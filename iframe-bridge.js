@@ -269,7 +269,13 @@ function setup(dispatch, ready){
                     entry.token = token;
                     adjustEntryToken(entry);
                 });
-            }
+            },
+            enableTokenButtons: bool => {
+                document.querySelector('#viewer').classList[bool ? 'remove' : 'add']('disable-token-buttons');
+            },
+            enableTypeButtons: bool => {
+                document.querySelector('#viewer').classList[bool ? 'remove' : 'add']('disable-type-buttons');
+            },
         };
 
         actions.viewOnly(Boolean(new URLSearchParams(window.location.search).get('viewOnly')));
