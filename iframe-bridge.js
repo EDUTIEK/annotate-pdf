@@ -80,6 +80,7 @@ function setup(dispatch, ready){
                     pos: newOne.pos,
                     token: newOne.token,
                     lineColor: newOne.lineColor,
+                    altLabel: newOne.altLabel,
                 };
                 entries.push(entry);
                 sync(entry, 'create', layer => {
@@ -247,6 +248,13 @@ function setup(dispatch, ready){
             },
             enableWordSelection: bool => {
                 manager.edutiekSelectWord = Boolean(bool);
+            },
+            setAltLabel: (id, string) => {
+                const entry = entries.find(e => e.id === id);
+                entry.altLabel = string ? String(string) : null;
+                sync(entry, 'setAltLabel', () => {
+                    entry.editor.edutiekAltLabel = entry.altLabel;
+                });
             }
         };
 
@@ -647,6 +655,7 @@ function externEntry(entry)
         noDelete: Boolean(entry.noDelete),
         token: entry.token,
         lineColor: entry.lineColor,
+        altLabel: entry.altLabel,
     };
 }
 
