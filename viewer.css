@@ -171,3 +171,8 @@
 {
     cursor: text;
 }
+
+#viewer .editToolbar.edutiek-move-toolbar
+{
+    left: 0;
+}
