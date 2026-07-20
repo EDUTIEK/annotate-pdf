@@ -136,7 +136,8 @@ function setup(dispatch, ready){
                         if (!entry.editor) {
                             return;
                         }
-                        if (entry.editor.getHightligtDiv().getBoundingClientRect().top >= window.innerHeight) {
+                        const rect = entry.editor.getHightligtDiv().getBoundingClientRect();
+                        if (rect.top - rect.height < 0 || rect.top >= window.innerHeight) {
                             entry.editor.getHightligtDiv().scrollIntoView({
                                 block: 'center',
                                 behaviour: 'instant',
