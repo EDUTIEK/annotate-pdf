@@ -310,8 +310,9 @@ function setup(dispatch, ready){
 
         function checkForChanges(){
             const page = pdfCurrentPageIndex();
-            const usedIds = Array.from(manager.getEditors(page)).map(createOrUpdateEntry.bind(null, page));
-            const isUsed = x => x.page !== page || usedIds.includes(x.id) || (x.pending || []).length || updating === x.id;
+            const pages = [page - 1, page, page + 1];
+            const usedIds = [].concat(...pages.map(createOrUpdateEntriesOfPage));
+            const isUsed = x => !pages.includes(x.page) || usedIds.includes(x.id) || (x.pending || []).length || updating === x.id;
             const deleted = entries.filter(x => !isUsed(x));
             entries = entries.filter(isUsed);
             updating = null;
@@ -323,6 +324,11 @@ function setup(dispatch, ready){
             });
             deletedIds = deletedIds.filter(id => !deleted.find(x => x.id === id));
             updateSelection();
+        }
+
+        function createOrUpdateEntriesOfPage(page)
+        {
+            return Array.from(manager.getEditors(page)).map(createOrUpdateEntry.bind(null, page));
         }
 
         function pageChanging(){

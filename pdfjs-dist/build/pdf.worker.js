@@ -59936,8 +59936,8 @@ class HighlightAnnotation extends MarkupAnnotation {
     const SHIFT = HEIGHT / 3;
     const RECT_HEIGHT = HEIGHT - 2;
     if (annotation.edutiekLabel) {
-      const f = await getFont(8.0);
-      const {width, height} = calcTextSize(annotation.edutiekLabel, 8.0, f);
+      const f = await getFont(6.0);
+      const {width, height} = calcTextSize(annotation.edutiekLabel, 6.0, f);
       const shift = height / 3;
       rect[0] -= width;
       rect[3] = Math.max(rectBaseYTop + height, rect[3]);
@@ -59947,7 +59947,7 @@ class HighlightAnnotation extends MarkupAnnotation {
       appearanceBuffer.push(`${getPdfColor([0x60, 0x60, 0x60], true)}`);
       drawRect(leftPosOverwrite || outlines[0][0], outlines[0][3], width + 2, RECT_HEIGHT);
       appearanceBuffer.push(`${getPdfColor([0xFF, 0xFF, 0xFF], true)}`);
-      appearanceBuffer.push(`BT ${numberToString((leftPosOverwrite || outlines[0][0]) + 1)} ${numberToString(outlines[0][3] + 2)} Td /F1 8.0 Tf [(${f.encodeString(annotation.edutiekLabel).map(escapeString).join('')})] TJ ET`);
+      appearanceBuffer.push(`BT ${numberToString((leftPosOverwrite || outlines[0][0]) + 1)} ${numberToString(outlines[0][3] + 2)} Td /F1 6.0 Tf [(${f.encodeString(annotation.edutiekLabel).map(escapeString).join('')})] TJ ET`);
     }
     let f, fontSize, basePos;
     switch (annotation.edutiekToken) {
@@ -59977,14 +59977,14 @@ class HighlightAnnotation extends MarkupAnnotation {
       rect[3] = Math.max(rectBaseYTop + 10, rect[3]);
       break;
     case 'question-mark':
-      f = await getFont(8.0);
-      fontSize = calcTextSize('?', 8.0, f);
+      f = await getFont(6.0);
+      fontSize = calcTextSize('?', 6.0, f);
       appearanceBuffer.push('/DeviceRGB cs');
       appearanceBuffer.push('/R1 gs');
       appearanceBuffer.push(`${getPdfColor([0x60, 0x60, 0x60], true)}`);
       drawRect(outlines[0][0] + offsetX, outlines[0][3], 10, RECT_HEIGHT);
       appearanceBuffer.push(`${getPdfColor([0xFF, 0xFF, 0xFF], true)}`);
-      appearanceBuffer.push(`BT ${numberToString(outlines[0][0] + offsetX + 3)} ${numberToString(outlines[0][3] + 1.5)} Td /F1 8.0 Tf [(${f.encodeString('?').map(escapeString).join('')})] TJ ET`);
+      appearanceBuffer.push(`BT ${numberToString(outlines[0][0] + offsetX + 3)} ${numberToString(outlines[0][3] + 1.5)} Td /F1 6.0 Tf [(${f.encodeString('?').map(escapeString).join('')})] TJ ET`);
       rect[0] -= fontSize.width;
       rect[3] = Math.max(rectBaseYTop + fontSize.height, rect[3]);
       break;
