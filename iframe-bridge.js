@@ -54,6 +54,12 @@ function setup(dispatch, ready){
             const entry = entryByEditor(x.source);
             actions.setToken(entry.id, x.type === entry.token ? null : x.type);
             dispatch('update', externEntry(entry));
+        });
+        pdfOn('edutiek-editor-focus-end', event => {
+            const entry = entryByEditor(event.source);
+            if (entry) {
+                dispatch('focus-end', externEntry(entry));
+            }
         })
 
         const actions = {
