@@ -12476,6 +12476,7 @@ class AnnotationEditor {
       edutiekToken: this.edutiekToken,
       edutiekLineColor: colorHex2Array(this.edutiekLineColor),
       edutiekLineColorAlpha: this.edutiekLineColor ? this.alphaColorOf(this.edutiekLineColor) : null,
+      edutiekAltText: this.edutiekAltText,
       // edutiek-patch: end
     };
   }

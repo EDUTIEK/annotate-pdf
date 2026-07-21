@@ -80,7 +80,7 @@ function setup(dispatch, ready){
                     pos: newOne.pos,
                     token: newOne.token,
                     lineColor: newOne.lineColor,
-                    altLabel: newOne.altLabel,
+                    altText: newOne.altText,
                 };
                 entries.push(entry);
                 sync(entry, 'create', layer => {
@@ -94,6 +94,9 @@ function setup(dispatch, ready){
                         }
                         if (entry.label) {
                             entry.editor.edutiekLabel = entry.label;
+                        }
+                        if (entry.altText) {
+                            entry.editor.edutiekAltText = entry.altText;
                         }
                         entry.editor.edutiekLineColor = entry.lineColor;
                         pdfAddEditorToLayerNoFocus(layer, entry.editor, () => {
@@ -268,11 +271,11 @@ function setup(dispatch, ready){
             enableWordSelection: bool => {
                 manager.edutiekSelectWord = Boolean(bool);
             },
-            setAltLabel: (id, string) => {
+            setAltText: (id, string) => {
                 const entry = entryById(id);
-                entry.altLabel = string ? String(string) : null;
-                sync(entry, 'setAltLabel', () => {
-                    entry.editor.edutiekAltLabel = entry.altLabel;
+                entry.altText = string ? String(string) : null;
+                sync(entry, 'setAltText', () => {
+                    entry.editor.edutiekAltText = entry.altText;
                     entry.intern = pdfSerializeEditor(entry.editor);
                 });
             },
@@ -368,7 +371,7 @@ function setup(dispatch, ready){
             }else if(s !== JSON.stringify(entry.intern)){
                 // These are null -> NaN and rounding issues that don't need to be propagated.
                 const d = Object.keys((diff(newData, entry.intern) || {}).Object || {});
-                const ignore = isSubset(['outlines', 'rect', 'structTreeParentId'], d);
+                const ignore = isSubset(['outlines', 'rect', 'structTreeParentId', 'edutiekAltText'], d);
                 entry.intern = newData;
                 if(!ignore){
                     dispatch('update', externEntry(entry));
@@ -487,7 +490,7 @@ function adjustLabelDiv(entry)
     }
     const e = entry.editor.getVerticalEdges();
     if (entry.editor.leftAlign && entry.type === 'vline') {
-        animationFrameWihLabel(() => {
+        animationFrameWihLabel(entry, () => {
             const r = entry.labelDiv.closest('.page').getBoundingClientRect();
             const hr = entry.editor.getHightligtDiv().getBoundingClientRect();
             const x = r.x;
@@ -497,7 +500,7 @@ function adjustLabelDiv(entry)
         });
     } else {
         entry.labelDiv.style.left = '';
-        animationFrameWihLabel(() => {
+        animationFrameWihLabel(entry, () => {
             const r = entry.labelDiv.closest('.page').getBoundingClientRect();
             entry.labelDiv.style.left = (e[0][0] * r.width / 10) + '%';
         });
@@ -686,7 +689,7 @@ function externEntry(entry)
         noDelete: Boolean(entry.noDelete),
         token: entry.token,
         lineColor: entry.lineColor,
-        altLabel: entry.altLabel,
+        altText: entry.altText,
     };
 }
 
