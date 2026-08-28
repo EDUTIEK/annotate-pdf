@@ -59671,25 +59671,108 @@ class InkAnnotation extends MarkupAnnotation {
     const {
       color,
       rect,
-      outlines: {
-        outline
-      },
+      // edutiek-patch: begin
+      // edutiek-patch: end
       opacity
     } = annotation;
     if (!color) {
       return null;
     }
     const appearanceBuffer = [`${getPdfColor(color, true)}`, "/R0 gs"];
-    appearanceBuffer.push(`${numberToString(outline[4])} ${numberToString(outline[5])} m`);
-    for (let i = 6, ii = outline.length; i < ii; i += 6) {
-      if (isNaN(outline[i])) {
-        appearanceBuffer.push(`${numberToString(outline[i + 4])} ${numberToString(outline[i + 5])} l`);
-      } else {
-        const [c1x, c1y, c2x, c2y, x, y] = outline.slice(i, i + 6);
-        appearanceBuffer.push([c1x, c1y, c2x, c2y, x, y].map(numberToString).join(" ") + " c");
+    // edutiek-patch: begin
+    if (annotation.outlines.points && annotation.outlines.points.pos) {
+      const radius = annotation.edutiekPageSize[0] * 0.03; // || 18
+      const pos = {x: annotation.outlines.points.pos.x, y: annotation.outlines.points.pos.y - radius * 2};
+      const bz = (...args) => appearanceBuffer.push(args.map(numberToString).join(' ') + ' c');
+      const KAPPA = 4.0 * ((Math.sqrt(2) - 1.0) / 3.0);
+      const o = radius * KAPPA;
+      const xe = pos.x + radius * 2;
+      const ye = pos.y + radius * 2;
+      const xm = pos.x + radius;
+      const ym = pos.y + radius;
+      appearanceBuffer.push(`${numberToString(pos.x)} ${numberToString(ym)} m`);
+      bz(pos.x, ym - o, xm - o, pos.y, xm, pos.y);
+      bz(xm + o, pos.y, xe, ym - o, xe, ym);
+      bz(xe, ym + o, xm + o, ye, xm, ye);
+      bz(xm - o, ye, pos.x, ym + o, pos.x, ym);
+      rect[0] = Math.min(rect[0], pos.x - o);
+      rect[1] = Math.min(rect[1], pos.y - o);
+      rect[2] = Math.max(rect[2], xe + o);
+      rect[3] = Math.max(rect[3], ye + o);
+      appearanceBuffer.push("h f");
+    } else if (annotation.outlines.wave) {
+      function buildWave(p1, p2)
+      {
+        const v = {
+          x: p2.x - p1.x,
+          y: p2.y - p1.y,
+        };
+        const vectorLen = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
+        v.x = v.x / vectorLen;
+        v.y = v.y / vectorLen;
+        const n = {
+          x: v.y,
+          y: -v.x, //  * (width / height),
+        };
+        const we = v.x === 0 ? annotation.edutiekPageSize[1] / Math.abs(v.y) : annotation.edutiekPageSize[0] / Math.abs(v.x);
+        const ww = rect[2] - rect[0];
+        const hh = rect[3] - rect[1];
+        const wh = v.x === 0 ? ww : hh;
+        const hw = v.x === 0 ? hh : ww;
+        const step = 3;
+        const pitch = 30 / wh;
+        const path = [`${numberToString(p1.x)} ${numberToString(p1.y)} m`];
+        let currLen = 0;
+        let curr = {x: p1.x, y: p1.y};
+        const parts = [];
+        const end = v.x === 0 ? (p2.y - p1.y) / v.y : (p2.x - p1.x) / v.x;
+        for (let currLen = 0; currLen <= end + step + step; currLen += step, curr.x += v.x * step, curr.y += v.y * step) {
+          parts.push([{x: curr.x + v.x * (step / 2), y: curr.y + v.y * (step / 2)}, {x: curr.x + v.x * step, y: curr.y + v.y * step}]);
+        }
+
+        const h = 0.8;
+        const pathBack = [`${numberToString(curr.x + n.x * h)} ${numberToString(curr.y + n.y * h)} l`];
+
+        for (let i = 0, dir = -1, backDir = ((parts.length & 1) ^ 1) * 2 - 1; i < parts.length; i++, dir = -dir, backDir = -backDir) {
+          const forth = parts[i];
+          const back = parts[parts.length - i - 1];
+          const back2 = parts[parts.length - i - 2] || [0,p1];
+          const c = {x: forth[0].x + (dir * pitch * n.x), y: forth[0].y + (dir * pitch * n.y)};
+          path.push(`${numberToString(c.x)} ${numberToString(c.y)} ${numberToString(c.x)} ${numberToString(c.y)} ${numberToString(forth[1].x)} ${numberToString(forth[1].y)} c`);
+          const cb = {
+            x: back[0].x + (backDir * pitch * n.x) + n.x * h,
+            y: back[0].y + (backDir * pitch * n.y) + n.y * h,
+          };
+          pathBack.push(`${numberToString(cb.x)} ${numberToString(cb.y)} ${numberToString(cb.x)} ${numberToString(cb.y)} ${numberToString(back2[1].x + n.x * h)} ${numberToString(back2[1].y + n.y * h)} c`);
+        }
+
+        return path.concat(pathBack);
       }
+      const outline = annotation.outlines.outline;
+      const points = annotation.outlines.points[0];
+
+      appearanceBuffer.push(...buildWave({
+        x: points[0],
+        y: points[1]
+      }, {
+        x: points[2],
+        y: points[3]
+      }));
+      appearanceBuffer.push("h f");
+    } else {
+      const outline = annotation.outlines.outline;
+      appearanceBuffer.push(`${numberToString(outline[4])} ${numberToString(outline[5])} m`);
+      for (let i = 6, ii = outline.length; i < ii; i += 6) {
+        if (isNaN(outline[i])) {
+          appearanceBuffer.push(`${numberToString(outline[i + 4])} ${numberToString(outline[i + 5])} l`);
+        } else {
+          const [c1x, c1y, c2x, c2y, x, y] = outline.slice(i, i + 6);
+          appearanceBuffer.push([c1x, c1y, c2x, c2y, x, y].map(numberToString).join(" ") + " c");
+        }
+      }
+      appearanceBuffer.push("h f");
     }
-    appearanceBuffer.push("h f");
+    // edutiek-patch: end
     const appearance = appearanceBuffer.join("\n");
     const appearanceStreamDict = new Dict(xref);
     appearanceStreamDict.set("FormType", 1);

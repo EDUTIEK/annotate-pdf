@@ -60,6 +60,7 @@
  *   enableTypeButtons: {function(bool): Promise},
  *   enableWordSelection: {function(bool): Promise},
  *   setAltText: {function(string, string): Promise},
+ *   setDefaultFreeFormType: {function(string): Promise},
  * }}
  */
 export default (parent, viewer, pdf, options = {}) => {
@@ -127,6 +128,7 @@ export default (parent, viewer, pdf, options = {}) => {
         enableTypeButtons: bool => request('enableTypeButtons', bool),
         enableWordSelection: bool => request('enableWordSelection', bool),
         setAltText: (id, altText) => request('setAltText', id, altText),
+        setDefaultFreeFormType: type => request('setDefaultFreeFormType', type),
     };
 
     function request(name, ...args)
