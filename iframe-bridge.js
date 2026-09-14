@@ -511,7 +511,6 @@ function adjustLabelDiv(entry)
         entry.labelDiv = createLabelDiv();
         entry.editor.getHighlightDiv().parentNode.appendChild(entry.labelDiv);
     }
-    const e = entry.editor.getVerticalEdges();
     if (entry.editor.leftAlign && entry.type === 'vline') {
         animationFrameWihLabel(entry, () => {
             const r = entry.labelDiv.closest('.page').getBoundingClientRect();
@@ -522,11 +521,14 @@ function adjustLabelDiv(entry)
             entry.labelDiv.style.left = (((x + (w * (entry.editor.leftAlign / 100)) - xc) / hr.width) * 100) + '%';
         });
     } else {
-        entry.labelDiv.style.left = '';
-        animationFrameWihLabel(entry, () => {
-            const r = entry.labelDiv.closest('.page').getBoundingClientRect();
-            entry.labelDiv.style.left = (e[0][0] * r.width / 10) + '%';
-        });
+        if (entry.editor._mustFixPosition) {
+            const e = entry.editor.getVerticalEdges();
+            entry.labelDiv.style.left = '';
+            animationFrameWihLabel(entry, () => {
+                const r = entry.labelDiv.closest('.page').getBoundingClientRect();
+                entry.labelDiv.style.left = (e[0][0] * r.width / 10) + '%';
+            });
+        }
     }
     if (entry.token) {
         entry.labelDiv.lastChild.className = 'annotation-token annotation-token-' + entry.token;
@@ -970,6 +972,11 @@ function PDF_EDIT_MODE()
 function PDF_VIEW_MODE()
 {
     return 0;
+}
+
+function PDF_INK_MODE()
+{
+    return 15;
 }
 
 function pdfSwitchToMode(mode, editId = null)

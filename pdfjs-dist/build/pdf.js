@@ -28423,6 +28423,7 @@ class HighlightEditor extends AnnotationEditor {
         editor: this
       });
       // edutiek-patch: begin
+      return this.#isFreeHighlight ? [["colorPicker", colorPicker], ['edutiek-token']] : [["colorPicker", colorPicker], ['edutiek-token'], ['edutiek']];
       return this.#isFreeHighlight ? [["colorPicker", colorPicker]] : [["colorPicker", colorPicker], ['edutiek-token'], ['edutiek']];
       // edutiek-patch: end
     }
