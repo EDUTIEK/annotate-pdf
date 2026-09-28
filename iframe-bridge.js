@@ -367,17 +367,20 @@ function setup(dispatch, ready){
             if(!entry){
                 Promise.all(entries.filter(x => x.page === page).map(x => sync(x, 'checkCreate', Void))).then(() => {
                     if(entryByEditor(editor)){return;}
-                    if (!editor._mustFixPosition && defaultColors.line) {
+                    if (editorIsFreeForm(editor) && defaultColors.line) {
                         editor.updateParams(pdfjsLib.AnnotationEditorParamsType.HIGHLIGHT_COLOR, defaultColors.line);
                     }
                     editor.edutiekLineColor = defaultColors.line;
                     const id = lastDeleted.internId === editor.id ? lastDeleted.id : uuid();
+                    const type = editorIsFreeForm(editor) ?
+                          ('freeform-' + pdfjsLib.HighlightEditor.edutiekDefaultOutlinerType) :
+                          currentMode;
                     const entry = {
                         id,
                         page,
                         editor,
                         intern: null,
-                        type: currentMode,
+                        type,
                         lineColor: defaultColors.line,
                         color: editor.color,
                     };
@@ -521,7 +524,7 @@ function adjustLabelDiv(entry)
             entry.labelDiv.style.left = (((x + (w * (entry.editor.leftAlign / 100)) - xc) / hr.width) * 100) + '%';
         });
     } else {
-        if (entry.editor._mustFixPosition) {
+        if (!editorIsFreeForm(entry.editor)) {
             const e = entry.editor.getVerticalEdges();
             entry.labelDiv.style.left = '';
             animationFrameWihLabel(entry, () => {
@@ -556,7 +559,7 @@ function validTokenTypes()
 
 function changeSvg(editor, mode, color)
 {
-    if(!editor._mustFixPosition){ // If it is a freeform highlight.
+    if(editorIsFreeForm(editor)){
         return;
     }
 
@@ -727,6 +730,11 @@ function animationFrameWihLabel(entry, proc)
         }
         proc();
     });
+}
+
+function editorIsFreeForm(editor)
+{
+    return !editor._mustFixPosition;
 }
 
 function uuid()

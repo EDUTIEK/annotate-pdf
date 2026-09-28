@@ -19,7 +19,7 @@
  * }} Annotation
  *
  * @typedef {string} Color // all hex forms are valid but names are not. E.g. `#FF003377` is valid but `green` is not.
- * @typedef {string} Type // 'marker', 'underline' or 'wave'
+ * @typedef {string} Type // 'marker', 'underline', 'wave', 'freeform-line', 'freeform-wave' or 'freeform-circle'
  * @typedef {string|null} Token // 'cross', 'exclamation-point', 'question-mark', 'check' or 'missing'
  *
  * @param {string} parent   id of the parent element to add the iframe
