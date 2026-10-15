@@ -67693,10 +67693,19 @@ async function edutiekLabelAndToken({annotation, appearanceBuffer, pos, rect, re
       x: start.x + token.max.x + marginBetweenLabelAndToken,
       y: start.y,
     });
-    rect[0] = Math.min(rect[0], start.x);
-    rect[1] = Math.min(rect[1], start.y + label.min.y, start.y + token.min.y);
-    rect[2] = Math.max(rect[2], start.x + marginBetweenLabelAndToken + label.max.x + token.max.x);
-    rect[3] = Math.max(rect[3], start.y + label.max.y, start.y + token.max.y);
+    const tokenRect = [
+      Math.min(start.x, start.x + label.min.x + token.min.x),
+      Math.min(start.y, start.y + label.min.y, start.y + token.min.y),
+      start.x + marginBetweenLabelAndToken + label.max.x + token.max.x,
+      Math.max(start.y + label.max.y, start.y + token.max.y)
+    ];
+    rect[0] = Math.min(rect[0], tokenRect[0]);
+    rect[1] = Math.min(rect[1], tokenRect[1]);
+    rect[2] = Math.max(rect[2], tokenRect[2]);
+    rect[3] = Math.max(rect[3], tokenRect[3]);
+    if (annotation.overwriteOutlines instanceof Array) {
+      annotation.overwriteOutlines.push([tokenRect[0], tokenRect[1], tokenRect[2], tokenRect[1], tokenRect[2], tokenRect[3], tokenRect[0], tokenRect[3], tokenRect[0], tokenRect[1]]);
+    }
   }
 }
 
