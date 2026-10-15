@@ -59588,7 +59588,9 @@ class InkAnnotation extends MarkupAnnotation {
     ink.setIfNotExists("Subtype", Name.get("Ink"));
     ink.set(oldAnnotation ? "M" : "CreationDate", `D:${getModificationDate(date)}`);
     ink.setIfArray("Rect", rect);
-    ink.setIfArray("InkList", outlines?.points || paths?.points);
+    // edutiek-patch: begin
+    ink.setIfArray("InkList", annotation.overwriteOutlines || outlines?.points || paths?.points);
+    // edutiek-patch: end
     ink.setIfNotExists("F", 4);
     ink.setIfNumber("Rotate", rotation);
     ink.setIfDefined("T", stringToAsciiOrUTF16BE(user));
@@ -59698,6 +59700,7 @@ class InkAnnotation extends MarkupAnnotation {
         rect[2] = Math.max(rect[2], xe + o);
         rect[3] = Math.max(rect[3], ye + o);
         appearanceBuffer.push("h f");
+        annotation.overwriteOutlines = [[rect[0], rect[1], rect[2], rect[1], rect[2], rect[3], rect[0], rect[3], rect[0], rect[1]]];
       }
       pos.y += radius * 2;
     } else if (annotation.outlines.points && annotation.outlines.points.start) {
@@ -59714,6 +59717,7 @@ class InkAnnotation extends MarkupAnnotation {
       rect[1] = Math.min(rect[1], Math.min(pos.y, end.y));
       rect[2] = Math.max(rect[2], Math.max(pos.x, end.x));
       rect[3] = Math.max(rect[3], Math.max(pos.y, end.y));
+      annotation.overwriteOutlines = [[rect[0], rect[1], rect[2], rect[1], rect[2], rect[3], rect[0], rect[3], rect[0], rect[1]]];
       appearanceBuffer.push("h f");
     } else if (annotation.outlines.wave) {
       function buildWave(p1, p2)
@@ -59778,6 +59782,7 @@ class InkAnnotation extends MarkupAnnotation {
       if (points[2] < points[0]) {
         rect[0] = points[2];
       }
+      annotation.overwriteOutlines = [[rect[0], rect[1], rect[2], rect[1], rect[2], rect[3], rect[0], rect[3], rect[0], rect[1]]];
     } else {
       const outline = annotation.outlines.outline;
       pos = {x: outline[4], y: outline[5]};
@@ -59795,6 +59800,7 @@ class InkAnnotation extends MarkupAnnotation {
         }
       }
       appearanceBuffer.push("h f");
+      annotation.overwriteOutlines = [[rect[0], rect[1], rect[2], rect[1], rect[2], rect[3], rect[0], rect[3], rect[0], rect[1]]];
     }
     const resources = new Dict(xref);
     const extGState = new Dict(xref);
@@ -67674,6 +67680,8 @@ async function edutiekLabelAndToken({annotation, appearanceBuffer, pos, rect, re
     rect[1] = Math.min(rect[1], start.y, start.y + token.min.y);
     rect[2] = Math.max(rect[2], start.x, start.x + label.max.x, start.x + token.max.x);
     rect[3] = Math.max(rect[3], start.y, start.y + label.max.y + token.max.y + topOffset);
+    annotation.overwriteOutlines ||= [];
+    annotation.overwriteOutlines.push([rect[0], rect[1], rect[2], rect[1], rect[2], rect[3], rect[0], rect[3], rect[0], rect[1]]);
   } else {
     // Align label right of the token.
     const start = {
