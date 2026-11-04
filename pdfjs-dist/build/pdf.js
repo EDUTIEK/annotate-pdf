@@ -10161,22 +10161,14 @@ class AnnotationEditorUIManager {
       return;
     }
     const editors = drawingEditor ? [drawingEditor] : [...this.#selectedEditors];
+    // edutiek-patch: begin
     const cmd = () => {
-      this._editorUndoBar?.show(undo, editors.length === 1 ? editors[0].editorType : editors.length);
       for (const editor of editors) {
         editor.remove();
       }
     };
-    const undo = () => {
-      for (const editor of editors) {
-        this.#addEditorToLayer(editor);
-      }
-    };
-    this.addCommands({
-      cmd,
-      undo,
-      mustExec: true
-    });
+    cmd();
+    // edutiek-patch: end
   }
   commitOrRemove() {
     this.#activeEditor?.commitOrRemove();
