@@ -159,7 +159,7 @@ function setup(dispatch, ready){
                         manager.setSelected(entry.editor);
                     }
                     window.requestAnimationFrame(() => {
-                        if (!entry.editor || !entry.getHighlightDiv) {
+                        if (!entry.editor || !entry.editor.getHighlightDiv) {
                             return;
                         }
                         const rect = entry.editor.getHighlightDiv().getBoundingClientRect();
