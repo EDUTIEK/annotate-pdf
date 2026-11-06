@@ -9208,9 +9208,70 @@ class AnnotationEditorUIManager {
     }
     return null;
   }
+  // edutiek-patch: begin
   highlightSelection(methodOfCreation = "", comment = false) {
     const selection = document.getSelection();
-    // edutiek-patch: begin
+    if (!selection || selection.isCollapsed) {
+      return;
+    }
+
+    const twoPages = (() => {
+      const textLayer = selection.anchorNode.parentNode.closest(".textLayer");
+      for (let i = 0, ii = selection.rangeCount; i < ii; i++) {
+        if (!textLayer.contains(selection.getRangeAt(i).commonAncestorContainer)) {
+          return true;
+        }
+      }
+      return false;
+    })();
+
+    if (!twoPages) {
+      this.#highlightOneSelection(methodOfCreation, comment);
+      return;
+    }
+
+    const normSel = selection.direction !== 'backward' ? {
+      anchorNode: selection.anchorNode,
+      anchorOffset: selection.anchorOffset,
+      focusNode: selection.focusNode,
+      focusOffset: selection.focusOffset,
+    } : {
+      anchorNode: selection.focusNode,
+      anchorOffset: selection.focusOffset,
+      focusNode: selection.anchorNode,
+      focusOffset: selection.anchorOffset,
+    };
+
+    const firstPageEndNode = (() => {
+      let n = normSel.anchorNode.parentNode.closest(".textLayer").lastChild;
+      while(n){
+        let nn = n;
+        while(nn){
+          if(nn.nodeName === '#text'){
+            return nn;
+          }
+          nn = nn.lastChild;
+        }
+        n = n.previousSibling;
+      }
+      return null;
+    })();
+
+    const secondPageStartNode = (() => {
+      let n = normSel.focusNode.parentNode.closest(".textLayer").firstChild;
+      while(n.nodeName !== '#text'){
+        n = n.firstChild;
+      }
+      return n;
+    })();
+
+    selection.setBaseAndExtent(normSel.anchorNode, normSel.anchorOffset, firstPageEndNode, firstPageEndNode.textContent.length);
+    this.#highlightOneSelection(methodOfCreation, comment);
+    selection.setBaseAndExtent(secondPageStartNode, 0, normSel.focusNode, normSel.focusOffset);
+    this.#highlightOneSelection(methodOfCreation, comment);
+  }
+  #highlightOneSelection(methodOfCreation, comment) {
+    const selection = document.getSelection();
     const src = selection.direction;
     if (this.edutiekSelectWord && 'none' !== src) {
       const other = src === 'forward' ? 'backward' : 'forward';
